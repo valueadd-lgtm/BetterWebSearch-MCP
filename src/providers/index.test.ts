@@ -4,10 +4,11 @@ import type { SearchResult } from "./types.js";
 
 // Shared mocks so every instance created by enabledProviders() uses the same
 // search function, which the tests configure once.
-const { braveSearch, tavilySearch, ddgSearch } = vi.hoisted(() => ({
+const { braveSearch, tavilySearch, ddgSearch, youcomSearch } = vi.hoisted(() => ({
   braveSearch: vi.fn(),
   tavilySearch: vi.fn(),
   ddgSearch: vi.fn(),
+  youcomSearch: vi.fn(),
 }));
 
 vi.mock("./brave.js", () => ({
@@ -28,6 +29,12 @@ vi.mock("./duckduckgo.js", () => ({
     search = ddgSearch;
   },
 }));
+vi.mock("./youcom.js", () => ({
+  YouComProvider: class {
+    readonly name = "youcom";
+    search = youcomSearch;
+  },
+}));
 import {
   aggregateSearch,
   enabledProviders,
@@ -45,6 +52,12 @@ const ddgResult: SearchResult = {
   url: "https://ddg.example",
   snippet: "ddg snippet",
   source: "duckduckgo",
+};
+const youcomResult: SearchResult = {
+  title: "You.com hit",
+  url: "https://youcom.example",
+  snippet: "youcom snippet",
+  source: "youcom",
 };
 
 describe("enabledProviders", () => {
@@ -69,10 +82,11 @@ describe("enabledProviders", () => {
     }
   });
 
-  it("includes keyed providers plus the keyless fallback", () => {
+  it("includes keyed providers plus the keyless fallbacks", () => {
     const names = enabledProviders().map((p) => p.name);
     expect(names).toContain("brave");
     expect(names).toContain("tavily");
+    expect(names).toContain("youcom");
     expect(names).toContain("duckduckgo");
   });
 
@@ -86,6 +100,7 @@ describe("enabledProviders", () => {
     const names = enabledProviders().map((p) => p.name);
     expect(names).not.toContain("brave");
     expect(names).not.toContain("tavily");
+    expect(names).toContain("youcom");
     expect(names).toContain("duckduckgo");
   });
 });
@@ -94,6 +109,7 @@ describe("aggregateSearch", () => {
   beforeEach(() => {
     process.env.BRAVE_API_KEY = "b";
     process.env.TAVILY_API_KEY = "t";
+    youcomSearch.mockResolvedValue([]);
   });
 
   afterEach(() => {
@@ -104,24 +120,28 @@ describe("aggregateSearch", () => {
     braveSearch.mockResolvedValue([braveResult]);
     ddgSearch.mockResolvedValue([ddgResult]);
     tavilySearch.mockResolvedValue([]);
+    youcomSearch.mockResolvedValue([youcomResult]);
 
     const results = await aggregateSearch("hello", { count: 5 });
 
-    expect(results).toHaveLength(2);
+    expect(results).toHaveLength(3);
     expect(results).toContainEqual(braveResult);
     expect(results).toContainEqual(ddgResult);
+    expect(results).toContainEqual(youcomResult);
   });
 
   it("tolerates one provider throwing and keeps the others' results", async () => {
     braveSearch.mockRejectedValue(new Error("brave exploded"));
     ddgSearch.mockResolvedValue([ddgResult]);
     tavilySearch.mockResolvedValue([]);
+    youcomSearch.mockResolvedValue([youcomResult]);
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
     const results = await aggregateSearch("hello", {});
 
-    expect(results).toHaveLength(1);
-    expect(results[0]).toEqual(ddgResult);
+    expect(results).toHaveLength(2);
+    expect(results).toContainEqual(ddgResult);
+    expect(results).toContainEqual(youcomResult);
     expect(warn).toHaveBeenCalled();
   });
 
@@ -132,12 +152,14 @@ describe("aggregateSearch", () => {
       braveSearch.mockImplementation(() => new Promise(() => {}));
       ddgSearch.mockResolvedValue([ddgResult]);
       tavilySearch.mockResolvedValue([]);
+      youcomSearch.mockResolvedValue([youcomResult]);
 
       const promise = aggregateSearch("hello", {});
       await vi.advanceTimersByTimeAsync(PROVIDER_TIMEOUT_MS + 1);
       const results = await promise;
 
-      expect(results).toEqual([ddgResult]);
+      expect(results).toContainEqual(ddgResult);
+      expect(results).toContainEqual(youcomResult);
       expect(warn).toHaveBeenCalledWith(
         expect.stringContaining("timed out"),
       );

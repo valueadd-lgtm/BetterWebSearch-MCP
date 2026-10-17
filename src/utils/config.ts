@@ -13,6 +13,7 @@ const KEY_ALIASES: Record<string, string[]> = {
   BRAVE_API_KEY: ["BETTER_WEB_SEARCH_BRAVE_API_KEY", "BRAVE_SEARCH_API_KEY"],
   TAVILY_API_KEY: ["BETTER_WEB_SEARCH_TAVILY_API_KEY"],
   SERPAPI_KEY: ["BETTER_WEB_SEARCH_SERPAPI_KEY", "SERP_API_KEY"],
+  YDC_API_KEY: ["BETTER_WEB_SEARCH_YDC_API_KEY", "YOUCOM_API_KEY"],
 };
 
 function pickFirstEnv(names: string[]): string | undefined {
@@ -34,6 +35,7 @@ export interface AppConfig {
   braveApiKey: string | undefined;
   tavilyApiKey: string | undefined;
   serpApiKey: string | undefined;
+  youcomApiKey: string | undefined;
   cacheEnabled: boolean;
   cachePath: string;
   browserEnabled: boolean;
@@ -85,6 +87,7 @@ export function loadConfig(): AppConfig {
   const braveApiKey = readKey("BRAVE_API_KEY");
   const tavilyApiKey = readKey("TAVILY_API_KEY");
   const serpApiKey = readKey("SERPAPI_KEY");
+  const youcomApiKey = readKey("YDC_API_KEY");
 
   const cacheEnabled =
     (process.env.BETTER_WEB_SEARCH_DISABLE_CACHE ?? "").toLowerCase() !== "true" &&
@@ -103,6 +106,7 @@ export function loadConfig(): AppConfig {
     braveApiKey,
     tavilyApiKey,
     serpApiKey,
+    youcomApiKey,
     cacheEnabled,
     cachePath,
     browserEnabled,
@@ -124,6 +128,14 @@ export function providerStatuses(cfg: AppConfig): ProviderStatus[] {
       enabled: true,
       keyless: true,
       hint: "always on",
+    },
+    {
+      name: "youcom",
+      enabled: true,
+      keyless: !cfg.youcomApiKey,
+      hint: cfg.youcomApiKey
+        ? "enabled (keyed)"
+        : "keyless — set YDC_API_KEY for higher limits",
     },
     {
       name: "brave",
@@ -157,6 +169,6 @@ export function formatBanner(
     `Cache: ${cfg.cacheEnabled ? cfg.cachePath : "disabled (memory fallback)"}`,
     `Browser: ${cfg.browserEnabled ? "enabled (playwright, pool=3)" : "disabled"}`,
     "Tools: web_search, web_research/deep_search, web_extract, web_find, web_news",
-    "Tip: run with no keys — DuckDuckGo works out of the box. Add BRAVE_API_KEY for richer ranking & recency.",
+    "Tip: run with no keys — DuckDuckGo + You.com work out of the box. Add BRAVE_API_KEY for richer ranking & recency.",
   ].join("\n");
 }

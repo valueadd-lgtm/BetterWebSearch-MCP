@@ -4,6 +4,18 @@ All notable changes to **better-web-search-mcp** are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **You.com search provider (keyless-first).** A new `YouComProvider` joins the
+  provider rotation alongside DuckDuckGo, Brave, and Tavily. It uses You.com's
+  keyless free-tier endpoint (`GET https://api.you.com/v1/agents/search`, 100
+  searches/day per IP) by default — zero config, always on. Set `YDC_API_KEY`
+  (or the alias `BETTER_WEB_SEARCH_YDC_API_KEY` / `YOUCOM_API_KEY`) to switch to
+  the keyed `POST` endpoint for higher limits. Existing default behaviour is
+  unchanged: the provider returns `[]` and logs a warning on any failure, so
+  it never breaks the aggregate search
+
 ## [0.10.0] - 2026-09-04
 
 ### Fixed
