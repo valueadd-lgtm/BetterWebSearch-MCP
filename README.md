@@ -22,7 +22,7 @@
 server that gives AI assistants genuinely better **web search**, **web scraping
 and page extraction**, and **deep research with citations**.
 
-It works **without API keys** by default (DuckDuckGo), and optionally adds Brave
+It works **without API keys** by default (DuckDuckGo + You.com), and optionally adds Brave
 or Tavily for richer ranking and publication dates. Everything runs locally over
 stdio, next to your client — no proxy, no hosted service, no telemetry.
 
@@ -207,7 +207,7 @@ See [SECURITY.md](.github/SECURITY.md) for the full threat model.
 
 ```
 src/
-  providers/      Search backends (DuckDuckGo, Brave, Tavily; SerpApi stubbed)
+  providers/      Search backends (DuckDuckGo, You.com, Brave, Tavily; SerpApi stubbed)
   extraction/     3-tier content pipeline (fetch, structured, browser)
   ranking/        Deduplication, domain scoring, reranking, passage selection,
                   source-independence clustering
@@ -218,12 +218,13 @@ benchmarks/       Token-efficiency harness and results
 
 ## Configuration
 
-All configuration is optional. DuckDuckGo works with zero setup.
+All configuration is optional. DuckDuckGo and You.com work with zero setup.
 
 ```bash
 # Optional: add more providers
 BRAVE_API_KEY=your_key     # Better ranking and recency
 TAVILY_API_KEY=your_key    # Alternative provider
+YDC_API_KEY=your_key       # You.com keyed endpoint (higher limits)
 ```
 
 See the [full configuration reference](https://phantompixeldev.github.io/BetterWebSearch-MCP/docs/configuration/) for all options including cache paths, browser settings, and environment variable names.
@@ -238,7 +239,7 @@ Full guides, API reference, and architecture details live on the docs site:
 - [Quick Start](https://phantompixeldev.github.io/BetterWebSearch-MCP/docs/quickstart/) — Get running in your first AI client
 - [Tools Reference](https://phantompixeldev.github.io/BetterWebSearch-MCP/docs/tools/) — All six tools with their input schemas
 - [Configuration](https://phantompixeldev.github.io/BetterWebSearch-MCP/docs/configuration/) — All environment variables and options
-- [Providers](https://phantompixeldev.github.io/BetterWebSearch-MCP/docs/providers/) — DuckDuckGo, Brave, Tavily
+- [Providers](https://phantompixeldev.github.io/BetterWebSearch-MCP/docs/providers/) — DuckDuckGo, You.com, Brave, Tavily
 - [Extraction](https://phantompixeldev.github.io/BetterWebSearch-MCP/docs/extraction/) — The three-tier pipeline in detail
 - [Benchmarks](https://phantompixeldev.github.io/BetterWebSearch-MCP/docs/benchmarks/) — Token efficiency and answer retention
 - [Architecture](https://phantompixeldev.github.io/BetterWebSearch-MCP/docs/architecture/) — System design overview
@@ -249,9 +250,9 @@ Full guides, API reference, and architecture details live on the docs site:
 
 ### Do I need an API key for web search?
 
-No. DuckDuckGo is the default provider and needs no key, no account and no
-billing. `BRAVE_API_KEY` and `TAVILY_API_KEY` are optional; they add publication
-dates and stronger ranking.
+No. DuckDuckGo and You.com are the default providers and need no key, no
+account and no billing. `BRAVE_API_KEY`, `TAVILY_API_KEY`, and `YDC_API_KEY`
+are optional; they add publication dates and stronger ranking.
 
 ### Is it free?
 

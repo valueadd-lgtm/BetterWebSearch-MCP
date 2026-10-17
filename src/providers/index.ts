@@ -1,6 +1,7 @@
 import { BraveProvider } from "./brave.js";
 import { DuckDuckGoProvider } from "./duckduckgo.js";
 import { TavilyProvider } from "./tavily.js";
+import { YouComProvider } from "./youcom.js";
 import type { SearchOptions, SearchProvider, SearchResult } from "./types.js";
 import { ProviderBlockedError } from "./types.js";
 import { loadConfig } from "../utils/config.js";
@@ -10,6 +11,8 @@ import { loadConfig } from "../utils/config.js";
  *
  * - Brave: enabled when `BRAVE_API_KEY` (or BETTER_WEB_SEARCH_BRAVE_API_KEY) is set.
  * - Tavily: enabled when `TAVILY_API_KEY` (or BETTER_WEB_SEARCH_TAVILY_API_KEY) is set.
+ * - You.com: always enabled (keyless free fallback) — zero-config, like DuckDuckGo.
+ *   When `YDC_API_KEY` is set, the keyed endpoint is used for higher limits.
  * - DuckDuckGo: always enabled (keyless free fallback) — zero-config.
  *
  * SerpApi is deliberately absent: `SerpApiProvider` is still a stub, so
@@ -25,6 +28,7 @@ export function enabledProviders(): SearchProvider[] {
   if (cfg.tavilyApiKey) {
     providers.push(new TavilyProvider());
   }
+  providers.push(new YouComProvider());
   providers.push(new DuckDuckGoProvider());
 
   return providers;
